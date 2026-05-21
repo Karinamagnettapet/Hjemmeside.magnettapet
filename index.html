@@ -110,6 +110,46 @@ Error generating stack: `+l.message+`
     			domain: window.location.host
   			}
 			})
-		</script></body>
+		</script>
+
+<!-- Cal.com Embed: Erstatter kontaktformularen med booking-widget -->
+<link rel="stylesheet" href="https://cal.com/embed/embed.css" />
+<script>
+(function() {
+  function replaceContactForm() {
+    // Find "Send os en besked" overskriften
+    var headings = document.querySelectorAll('h2, h3, h4, [class*="CardTitle"]');
+    var contactCard = null;
+
+    headings.forEach(function(el) {
+      if (el.textContent.trim() === 'Send os en besked') {
+        // Gå op til det nærmeste kort/card element
+        contactCard = el.closest('[class*="card"], [class*="Card"], section, .rounded');
+        if (!contactCard) contactCard = el.parentElement.parentElement;
+      }
+    });
+
+    if (contactCard) {
+      contactCard.innerHTML = '<div style="text-align:center;padding:1rem 0;">' +
+        '<h3 style="font-size:1.5rem;font-weight:bold;margin-bottom:0.5rem;">Book et uforpligtende møde</h3>' +
+        '<p style="color:#888;margin-bottom:1.5rem;">Vælg et tidspunkt der passer dig, så mødes vi på Google Meet eller Zoom.</p>' +
+        '</div>' +
+        '<iframe src="https://cal.com/karina.riis.hammer" style="width:100%;height:650px;border:none;border-radius:12px;" loading="lazy"></iframe>';
+      return true;
+    }
+    return false;
+  }
+
+  // Vent på at React-appen renderer
+  var attempts = 0;
+  var interval = setInterval(function() {
+    if (replaceContactForm() || attempts > 50) {
+      clearInterval(interval);
+    }
+    attempts++;
+  }, 200);
+})();
+</script>
+</body>
 
 </html>
