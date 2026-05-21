@@ -29,16 +29,55 @@
 		<meta name="twitter:image:height" content="630"><link rel="canonical" href="index.html" /></head>
 
   <body>
-    <!-- Mock tRPC backend så React-appen fungerer uden server -->
+    <!-- Mock tRPC backend + send tilbud/kontakt til info@magnettapet.dk via FormSubmit -->
     <script>
     (function() {
       var originalFetch = window.fetch;
       window.fetch = function(url, options) {
         var urlStr = typeof url === 'string' ? url : url.toString();
         if (urlStr.indexOf('/api/trpc') !== -1) {
-          // Mock tRPC response - returnerer success for alle kald
+          // Tjek om det er en mutation (tilbud eller kontakt) med POST body
+          if (options && options.method === 'POST' && options.body) {
+            try {
+              var body = JSON.parse(options.body);
+              // Hent data fra tRPC batch format
+              var inputData = null;
+              if (body && body[0] && body[0].json) {
+                inputData = body[0].json;
+              } else if (body && body.json) {
+                inputData = body.json;
+              }
+
+              if (inputData && (inputData.name || inputData.email)) {
+                // Send til info@magnettapet.dk via FormSubmit
+                var formData = new FormData();
+                formData.append('name', inputData.name || '');
+                formData.append('email', inputData.email || '');
+                formData.append('phone', inputData.phone || '');
+                formData.append('organization', inputData.organization || '');
+                formData.append('message', inputData.message || '');
+                formData.append('_subject', 'Ny henvendelse fra magnettapet.dk');
+                formData.append('_template', 'table');
+                formData.append('_captcha', 'false');
+
+                if (inputData.totalPrice) {
+                  formData.append('totalPrice', inputData.totalPrice + ' kr');
+                }
+                if (inputData.accessories && inputData.accessories.length > 0) {
+                  formData.append('accessories', inputData.accessories.join(', '));
+                }
+
+                // Send asynkront til FormSubmit
+                originalFetch('https://formsubmit.co/ajax/info@magnettapet.dk', {
+                  method: 'POST',
+                  body: formData
+                }).catch(function() {});
+              }
+            } catch(e) {}
+          }
+
+          // Returner altid success til React-appen
           var mockResponse = {result:{data:{json:null}}};
-          // Hvis det er en batch request, returner array
           if (urlStr.indexOf(',') !== -1 || urlStr.indexOf('batch=1') !== -1) {
             mockResponse = [{result:{data:{json:null}}}];
           }
