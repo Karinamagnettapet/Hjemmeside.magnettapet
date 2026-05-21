@@ -29,7 +29,7 @@
 		<meta name="twitter:image:height" content="630"><link rel="canonical" href="index.html" /></head>
 
   <body>
-    <!-- Mock tRPC backend + send tilbud/kontakt til info@magnettapet.dk via FormSubmit -->
+    <!-- Mock tRPC backend + send tilbud/kontakt til karina.riis.hammer@magnettapet.dk via FormSubmit -->
     <script>
     (function() {
       var originalFetch = window.fetch;
@@ -49,7 +49,7 @@
               }
 
               if (inputData && (inputData.name || inputData.email)) {
-                // Send til info@magnettapet.dk via FormSubmit
+                // Send til karina.riis.hammer@magnettapet.dk via FormSubmit
                 var formData = new FormData();
                 formData.append('name', inputData.name || '');
                 formData.append('email', inputData.email || '');
@@ -68,7 +68,7 @@
                 }
 
                 // Send asynkront til FormSubmit
-                originalFetch('https://formsubmit.co/ajax/info@magnettapet.dk', {
+                originalFetch('https://formsubmit.co/ajax/karina.riis.hammer@magnettapet.dk', {
                   method: 'POST',
                   body: formData
                 }).catch(function() {});
