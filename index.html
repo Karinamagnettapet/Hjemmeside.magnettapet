@@ -113,41 +113,48 @@ Error generating stack: `+l.message+`
 		</script>
 
 <!-- Cal.com Embed: Erstatter kontaktformularen med booking-widget -->
-<link rel="stylesheet" href="https://cal.com/embed/embed.css" />
 <script>
 (function() {
-  function replaceContactForm() {
-    // Find "Send os en besked" overskriften
-    var headings = document.querySelectorAll('h2, h3, h4, [class*="CardTitle"]');
-    var contactCard = null;
-
-    headings.forEach(function(el) {
-      if (el.textContent.trim() === 'Send os en besked') {
-        // Gå op til det nærmeste kort/card element
-        contactCard = el.closest('[class*="card"], [class*="Card"], section, .rounded');
-        if (!contactCard) contactCard = el.parentElement.parentElement;
-      }
-    });
-
-    if (contactCard) {
-      contactCard.innerHTML = '<div style="text-align:center;padding:1rem 0;">' +
-        '<h3 style="font-size:1.5rem;font-weight:bold;margin-bottom:0.5rem;">Book et uforpligtende møde</h3>' +
-        '<p style="color:#888;margin-bottom:1.5rem;">Vælg et tidspunkt der passer dig, så mødes vi på Google Meet eller Zoom.</p>' +
-        '</div>' +
-        '<iframe src="https://cal.com/karina.riis.hammer" style="width:100%;height:650px;border:none;border-radius:12px;" loading="lazy"></iframe>';
-      return true;
-    }
-    return false;
-  }
-
-  // Vent på at React-appen renderer
   var attempts = 0;
   var interval = setInterval(function() {
-    if (replaceContactForm() || attempts > 50) {
-      clearInterval(interval);
-    }
     attempts++;
-  }, 200);
+    // Find kontakt-sektionen via id
+    var kontakt = document.getElementById('kontakt');
+    if (!kontakt) {
+      // Prøv også at finde via tekst
+      var allSections = document.querySelectorAll('section');
+      allSections.forEach(function(sec) {
+        if (sec.textContent.indexOf('Send os en besked') !== -1 || sec.textContent.indexOf('Send besked') !== -1) {
+          kontakt = sec;
+        }
+      });
+    }
+    if (kontakt) {
+      // Find og erstat kun formulardelen (det højre grid-element)
+      var forms = kontakt.querySelectorAll('form');
+      var target = forms.length > 0 ? forms[0].closest('div') : null;
+      if (!target) {
+        // Fallback: find "Send os en besked" teksten
+        var allEls = kontakt.querySelectorAll('*');
+        for (var i = 0; i < allEls.length; i++) {
+          if (allEls[i].childNodes.length === 1 && allEls[i].textContent.trim() === 'Send os en besked') {
+            target = allEls[i].closest('div[class]') || allEls[i].parentElement.parentElement;
+            break;
+          }
+        }
+      }
+      if (target) {
+        target.innerHTML = '<div style="text-align:center;padding:1rem 0;">' +
+          '<h3 style="font-size:1.5rem;font-weight:bold;margin-bottom:0.5rem;">Book et uforpligtende møde</h3>' +
+          '<p style="color:#888;margin-bottom:1.5rem;">Vælg et tidspunkt der passer dig, så mødes vi på Google Meet eller Zoom.</p>' +
+          '</div>' +
+          '<iframe src="https://cal.com/karina.riis.hammer" style="width:100%;min-height:700px;border:none;border-radius:12px;" loading="lazy"></iframe>';
+        clearInterval(interval);
+        return;
+      }
+    }
+    if (attempts > 100) clearInterval(interval);
+  }, 300);
 })();
 </script>
 </body>
